@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Recapped</title>
+    <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+
+<div id="screen-connect">
+    <img src="/images/spotify-logo.svg" alt="Spotify Logo" id="spotify-logo">
+    <h1>Recapped</h1>
+    <p>Your music. Your story.</p>
+    <button id="oauth">Connect with Spotify</button>
+</div>
+
+<div id="screen-main" class="hidden">
+    <h1>Recapped</h1>
+
+    <div id="mode-buttons">
+        <button id="btn-alltime">All Time</button>
+        <button id="btn-yearly">This Year</button>
+    </div>
+
+    <div id="loading-section" class="hidden">
+        <p class="step" id="step-artists">Fetching your top artists...</p>
+        <p class="step" id="step-tracks">Fetching your top tracks...</p>
+        <p class="step" id="step-genre">Calculating your top genre...</p>
+        <p class="step" id="step-colors">Extracting colors...</p>
+        <p class="step" id="step-image">Generating your background...</p>
+        <p class="step" id="step-card">Building your card...</p>
+    </div>
+
+    <div id="results-section" class="hidden">
+        <div id="cards-container">
+            <div class="card-wrapper" id="card-0"><canvas class="result-canvas"></canvas></div>
+            <div class="card-wrapper" id="card-1"><canvas class="result-canvas"></canvas></div>
+            <div class="card-wrapper" id="card-2"><canvas class="result-canvas"></canvas></div>
+        </div>
+        <button id="btn-download" class="hidden">Download</button>
+    </div>
+</div>
+
+<script type="module" src="src/app.js"></script>
+
+</body>
+</html>

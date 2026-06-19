@@ -50,7 +50,6 @@ async function startFlow(timeRange) {
     hide('btn-download');
     hide('results-section');
 
-    // Reset steps
     ['step-artists', 'step-tracks', 'step-genre', 'step-colors', 'step-image', 'step-card'].forEach(resetStep);
     show('loading-section');
 
@@ -88,7 +87,6 @@ async function startFlow(timeRange) {
         setStep('step-image', 'done');
         setStep('step-card', 'done');
 
-        // Show results
         show('results-section');
 
         currentCanvases.forEach((canvas, i) => {

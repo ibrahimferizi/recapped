@@ -8,7 +8,7 @@ const redis = new Redis({
 });
 
 const ALLOWED_ORIGINS = [
-    'recapped-music.vercel.app',
+    'https://recapped-music.vercel.app',
     'http://127.0.0.1:3000',
 ];
 

@@ -1,8 +1,9 @@
 import { getColor } from 'colorthief';
+import { refreshAccessToken } from './auth.js';
 
 const BASE_URL = 'https://api.spotify.com/v1';
 
-async function fetchData(endpoint) {
+async function fetchData(endpoint, isRetry = false) {
     const token = localStorage.getItem('access_token');
 
     const response  = await fetch(`${BASE_URL}${endpoint}`, {
@@ -10,6 +11,15 @@ async function fetchData(endpoint) {
             'Authorization': `Bearer ${token}`
         }
     });
+
+    if (response.status === 401 && !isRetry) {
+        await refreshAccessToken();
+        return fetchData(endpoint, true);
+    }
+
+    if (!response.ok) {
+        throw new Error(`Spotify API error: ${response.status}`);
+    }
 
     return response.json();
 }
@@ -34,6 +44,49 @@ export async function getArtistGenres(artistName) {
     return data.genres || [];
 }
 
+const GENRE_ALIASES = {
+    'hip hop': 'hip-hop',
+    'hiphop': 'hip-hop',
+    'rap': 'hip-hop',
+    'trap': 'hip-hop',
+
+    'r&b': 'r&b',
+    'rnb': 'r&b',
+    'rhythm and blues': 'r&b',
+
+    'edm': 'electronic',
+    'electronica': 'electronic',
+    'dance': 'electronic',
+    'house': 'electronic',
+    'techno': 'electronic',
+
+    'indie rock': 'indie',
+    'indie pop': 'indie',
+
+    'alternative rock': 'rock',
+    'alt rock': 'rock',
+    'classic rock': 'rock',
+    'hard rock': 'rock',
+
+    'pop rock': 'pop',
+    'synth-pop': 'pop',
+    'synthpop': 'pop',
+
+    'death metal': 'metal',
+    'black metal': 'metal',
+    'heavy metal': 'metal',
+
+    'classical music': 'classical',
+    'orchestral': 'classical',
+
+    'smooth jazz': 'jazz',
+};
+
+function normalizeGenre(genre) {
+    const lower = genre.toLowerCase().trim();
+    return GENRE_ALIASES[lower] || lower;
+}
+
 export async function getTopGenre(artists) {
     const top25 = artists.slice(0, 25);
     const genreResults = [];
@@ -45,7 +98,7 @@ export async function getTopGenre(artists) {
 
     const genreCount = {};
     genreResults.flat().filter(genre => typeof genre === 'string').forEach(genre => {
-        const normalized = genre.toLowerCase();
+        const normalized = normalizeGenre(genre);
         genreCount[normalized] = (genreCount[normalized] || 0) + 1;
     });
 

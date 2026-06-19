@@ -1,4 +1,4 @@
-import { connect, exchangeToken } from './auth.js';
+import { connect, exchangeToken, isLoggedIn, logout } from './auth.js';
 import { getTopArtists, getTopTracks, getTopGenre, extractColors, generateImages } from './api.js';
 import { generateCard } from './canvas.js';
 
@@ -21,6 +21,11 @@ function setButtonsDisabled(disabled) {
     document.getElementById('btn-yearly').disabled = disabled;
 }
 
+function getYearlyTimeRange() {
+    const month = new Date().getMonth();
+    return month <= 2 ? 'short_term' : 'medium_term';
+}
+
 const params = new URLSearchParams(window.location.search);
 const code = params.get('code');
 
@@ -29,7 +34,7 @@ if (code) {
     window.history.replaceState({}, document.title, '/');
 }
 
-if (localStorage.getItem('access_token')) {
+if (isLoggedIn()) {
     hide('screen-connect');
     show('screen-main');
 } else {
@@ -38,17 +43,24 @@ if (localStorage.getItem('access_token')) {
 }
 
 document.getElementById('btn-alltime').addEventListener('click', () => startFlow('long_term'));
-document.getElementById('btn-yearly').addEventListener('click', () => startFlow('medium_term'));
+document.getElementById('btn-yearly').addEventListener('click', () => startFlow(getYearlyTimeRange()));
+document.getElementById('btn-retry').addEventListener('click', () => {
+    if (lastTimeRange) startFlow(lastTimeRange);
+});
 
 let selectedIndex = null;
 let currentCanvases = [];
+let lastTimeRange = null;
 
 async function startFlow(timeRange) {
+    lastTimeRange = timeRange;
     selectedIndex = null;
     currentCanvases = [];
     setButtonsDisabled(true);
     hide('btn-download');
     hide('results-section');
+    hide('error-section');
+    show('skeleton-section');
 
     ['step-artists', 'step-tracks', 'step-genre', 'step-colors', 'step-image', 'step-card'].forEach(resetStep);
     show('loading-section');
@@ -87,6 +99,7 @@ async function startFlow(timeRange) {
         setStep('step-image', 'done');
         setStep('step-card', 'done');
 
+        hide('skeleton-section');
         show('results-section');
 
         currentCanvases.forEach((canvas, i) => {
@@ -115,6 +128,22 @@ async function startFlow(timeRange) {
 
     } catch (err) {
         console.error('Flow failed:', err);
+        hide('loading-section');
+        hide('skeleton-section');
+        if (!isLoggedIn()) {
+            hide('screen-main');
+            show('screen-connect');
+            return;
+        }
+
+        const message = err.message.includes('429')
+            ? 'Too many requests right now — please wait a minute and try again.'
+            : err.message.includes('Image generation failed')
+                ? 'Background generation failed — please try again.'
+                : 'Something went wrong. Please try again.';
+
+        document.getElementById('error-message').textContent = message;
+        show('error-section');
     } finally {
         setButtonsDisabled(false);
     }

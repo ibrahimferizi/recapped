@@ -42,22 +42,49 @@ export async function connect() {
 export async function exchangeToken(code) {
     const verifier = localStorage.getItem('verifier');
 
-    const response = await fetch('https://accounts.spotify.com/api/token', {
+    const response = await fetch('/api/exchange-token', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-            client_id: CLIENT_ID,
-            grant_type: 'authorization_code',
-            code: code,
-            redirect_uri: REDIRECT_URI,
-            code_verifier: verifier
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, verifier }),
     });
+
+    if (!response.ok) {
+        throw new Error('Token exchange failed');
+    }
 
     const data = await response.json();
     localStorage.setItem('access_token', data.access_token);
+    localStorage.setItem('session_id', data.session_id);
     localStorage.removeItem('verifier');
     return data.access_token;
+}
+
+export async function refreshAccessToken() {
+    const sessionId = localStorage.getItem('session_id');
+    if (!sessionId) throw new Error('No session');
+
+    const response = await fetch('/api/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId }),
+    });
+
+    if (!response.ok) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('session_id');
+        throw new Error('Refresh failed, please reconnect');
+    }
+
+    const data = await response.json();
+    localStorage.setItem('access_token', data.access_token);
+    return data.access_token;
+}
+
+export function isLoggedIn() {
+    return !!localStorage.getItem('access_token') && !!localStorage.getItem('session_id');
+}
+
+export function logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('session_id');
 }

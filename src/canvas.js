@@ -1,4 +1,4 @@
-export async function generateCard(backgroundUrl, topArtists, topTracks, topGenre, appName = 'recapped', appUrl = 'recapped.app') {
+export async function generateCard(backgroundUrl, topArtists, topTracks, topGenre, appName = 'recapped', appUrl = 'recapped-music.vercel.app') {
     const W = 1080;
     const H = 1920;
 

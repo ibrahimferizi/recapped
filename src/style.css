@@ -116,6 +116,20 @@ body {
     100% { background-position: -200% 0; }
 }
 
+#btn-logout {
+    background-color: transparent;
+    color: #888888;
+    border: 1px solid #333333;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+#btn-logout:hover {
+    color: #FFFFFF;
+    border-color: #555555;
+}
+
 .step {
     color: #444444;
     font-size: 18px;

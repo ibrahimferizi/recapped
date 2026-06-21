@@ -1,39 +1,28 @@
 import { getColor } from 'colorthief';
-import { refreshAccessToken } from './auth.js';
 
-const BASE_URL = 'https://api.spotify.com/v1';
-
-async function fetchData(endpoint, isRetry = false) {
-    const token = localStorage.getItem('access_token');
-
-    const response  = await fetch(`${BASE_URL}${endpoint}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+async function fetchProxy(endpoint, params = {}) {
+    const query = new URLSearchParams({ endpoint, ...params });
+    const response = await fetch(`/api/spotify-proxy?${query}`, {
+        credentials: 'include',
     });
 
-    if (response.status === 401 && !isRetry) {
-        await refreshAccessToken();
-        return fetchData(endpoint, true);
-    }
-
     if (!response.ok) {
-        throw new Error(`Spotify API error: ${response.status}`);
+        throw new Error(`Spotify proxy error: ${response.status}`);
     }
 
     return response.json();
 }
 
 export async function getUser() {
-    return fetchData('/me');
+    return fetchProxy('me');
 }
 
 export async function getTopArtists(timeRange) {
-    return fetchData(`/me/top/artists?limit=50&time_range=${timeRange}`);
+    return fetchProxy('top-artists', { time_range: timeRange });
 }
 
 export async function getTopTracks(timeRange) {
-    return fetchData(`/me/top/tracks?limit=50&time_range=${timeRange}`);
+    return fetchProxy('top-tracks', { time_range: timeRange });
 }
 
 export async function getArtistGenres(artistName) {

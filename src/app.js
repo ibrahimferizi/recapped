@@ -1,4 +1,4 @@
-import { connect, exchangeToken, isLoggedIn, logout } from './auth.js';
+import { connect, exchangeToken, checkLoggedIn, logout } from './auth.js';
 import { getTopArtists, getTopTracks, getTopGenre, extractColors, generateImages } from './api.js';
 import { generateCard } from './canvas.js';
 
@@ -26,26 +26,41 @@ function getYearlyTimeRange() {
     return month <= 2 ? 'short_term' : 'medium_term';
 }
 
-const params = new URLSearchParams(window.location.search);
-const code = params.get('code');
+async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
 
-if (code) {
-    await exchangeToken(code);
-    window.history.replaceState({}, document.title, '/');
+    if (code) {
+        try {
+            await exchangeToken(code);
+        } catch (err) {
+            console.error('Login failed:', err);
+        }
+        window.history.replaceState({}, document.title, '/');
+    }
+
+    const loggedIn = await checkLoggedIn();
+
+    if (loggedIn) {
+        hide('screen-connect');
+        show('screen-main');
+    } else {
+        show('screen-connect');
+        document.getElementById('oauth').addEventListener('click', connect);
+    }
 }
 
-if (isLoggedIn()) {
-    hide('screen-connect');
-    show('screen-main');
-} else {
-    show('screen-connect');
-    document.getElementById('oauth').addEventListener('click', connect);
-}
+init();
 
 document.getElementById('btn-alltime').addEventListener('click', () => startFlow('long_term'));
 document.getElementById('btn-yearly').addEventListener('click', () => startFlow(getYearlyTimeRange()));
 document.getElementById('btn-retry').addEventListener('click', () => {
     if (lastTimeRange) startFlow(lastTimeRange);
+});
+document.getElementById('btn-logout').addEventListener('click', async () => {
+    await logout();
+    hide('screen-main');
+    show('screen-connect');
 });
 
 let selectedIndex = null;

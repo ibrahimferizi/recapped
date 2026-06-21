@@ -16,6 +16,7 @@ const ALLOWED_ORIGINS = [
 const CLIENT_ID = process.env.VITE_CLIENT_ID;
 const REDIRECT_URI = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3000/';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
+const isProd = process.env.VERCEL_ENV === 'production';
 
 export default async function handler(req, res) {
     const origin = req.headers['origin'] || req.headers['referer'] || '';
@@ -54,16 +55,19 @@ export default async function handler(req, res) {
 
         const data = await response.json();
         const sessionId = crypto.randomUUID();
+        const expiresAt = Date.now() + data.expires_in * 1000;
 
-        await redis.set(`session:${sessionId}`, JSON.stringify({ refresh_token: data.refresh_token }), {
-            ex: SESSION_TTL_SECONDS,
-        });
-
-        res.status(200).json({
+        await redis.set(`session:${sessionId}`, JSON.stringify({
             access_token: data.access_token,
-            session_id: sessionId,
-            expires_in: data.expires_in,
-        });
+            refresh_token: data.refresh_token,
+            expires_at: expiresAt,
+        }), { ex: SESSION_TTL_SECONDS });
+
+        res.setHeader('Set-Cookie', [
+            `session_id=${sessionId}; HttpOnly; Path=/; Max-Age=${SESSION_TTL_SECONDS}; SameSite=Lax${isProd ? '; Secure' : ''}`
+        ]);
+
+        res.status(200).json({ ok: true });
     } catch (err) {
         console.error('exchange-token error:', err);
         res.status(500).json({ error: err.message });

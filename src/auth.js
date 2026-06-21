@@ -25,7 +25,7 @@ export async function connect() {
     const verifier = getVerifier();
     const challenge = await getChallenge(verifier);
 
-    localStorage.setItem('verifier', verifier);
+    sessionStorage.setItem('verifier', verifier);
 
     const params = new URLSearchParams({
         client_id: CLIENT_ID,
@@ -40,11 +40,12 @@ export async function connect() {
 }
 
 export async function exchangeToken(code) {
-    const verifier = localStorage.getItem('verifier');
+    const verifier = sessionStorage.getItem('verifier');
 
     const response = await fetch('/api/exchange-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ code, verifier }),
     });
 
@@ -52,11 +53,7 @@ export async function exchangeToken(code) {
         throw new Error('Token exchange failed');
     }
 
-    const data = await response.json();
-    localStorage.setItem('access_token', data.access_token);
-    localStorage.setItem('session_id', data.session_id);
-    localStorage.removeItem('verifier');
-    return data.access_token;
+    sessionStorage.removeItem('verifier');
 }
 
 export async function refreshAccessToken() {
@@ -80,11 +77,16 @@ export async function refreshAccessToken() {
     return data.access_token;
 }
 
-export function isLoggedIn() {
-    return !!localStorage.getItem('access_token') && !!localStorage.getItem('session_id');
+export async function checkLoggedIn() {
+    const response = await fetch('/api/spotify-proxy?endpoint=me', {
+        credentials: 'include',
+    });
+    return response.ok;
 }
 
-export function logout() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('session_id');
+export async function logout() {
+    await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include',
+    });
 }

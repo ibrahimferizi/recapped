@@ -8,49 +8,494 @@
 <body>
 
 <div id="screen-connect">
-    <img src="/images/spotify-logo.svg" alt="Spotify Logo" id="spotify-logo">
-    <h1>Recapped</h1>
-    <p>Your music. Your story.</p>
-    <button id="oauth">Connect with Spotify</button>
+    <div class="hero-glow hero-glow-one"></div>
+    <div class="hero-glow hero-glow-two"></div>
+
+    <main class="hero">
+        <h1>
+            Your music.<br>
+            <span>Your story.</span>
+        </h1>
+
+        <p class="hero-description">
+            Turn your Spotify listening history into a
+            personalized visual recap worth keeping.
+        </p>
+
+        <button id="oauth" class="connect-button">
+            <img src="/images/spotify-icon-black.svg" alt="">
+            <span>Connect with Spotify</span>
+            <span class="button-arrow" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="none">
+                    <path d="M4 10H16M11 5L16 10L11 15"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"/>
+                </svg>
+            </span>
+        </button>
+
+        <button class="hero-note" id="beta-info-btn">
+            Currently in limited beta &#x00B7; <span>How does access work?</span>
+        </button>
+    </main>
+
+    <section class="showcase">
+        <div class="showcase-heading">
+            <span class="showcase-label">FROM THE COMMUNITY</span>
+            <h2>See what people made.</h2>
+        </div>
+
+        <div class="showcase-stage">
+            <button
+                    class="showcase-arrow showcase-prev"
+                    id="showcase-prev"
+                    aria-label="Previous recap"
+            >
+            <span class="button-arrow" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="none">
+                    <path d="M16 10H4M9 5L4 10L9 15"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"/>
+                </svg>
+            </span>
+            </button>
+
+            <div class="showcase-card">
+                <img
+                        id="showcase-image"
+                        src="/images/showcase/recap-1.jpg"
+                        alt="Recapped music recap"
+                >
+
+                <div class="showcase-info">
+                    <div>
+                        <strong id="showcase-name">Beta tester</strong>
+                        <p id="showcase-caption">
+                            A personal snapshot of their listening.
+                        </p>
+                    </div>
+
+                    <span id="showcase-counter">01 / 04</span>
+                </div>
+            </div>
+
+            <button
+                    class="showcase-arrow showcase-next"
+                    id="showcase-next"
+                    aria-label="Next recap"
+            >
+            <span class="button-arrow" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="none">
+                    <path d="M4 10H16M11 5L16 10L11 15"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"/>
+                </svg>
+            </span>
+            </button>
+        </div>
+
+        <div class="showcase-dots" id="showcase-dots"></div>
+    </section>
+
+    <div class="beta-modal hidden" id="beta-modal">
+        <div class="beta-modal-backdrop" id="beta-modal-close"></div>
+
+        <div class="beta-modal-card">
+            <button class="modal-close" id="beta-modal-x" aria-label="Close">
+                &times;
+            </button>
+
+            <div class="modal-label">LIMITED BETA</div>
+
+            <h2>Recapped is still in development.</h2>
+
+            <p>
+                Recapped currently uses Spotify's Development Mode,
+                which limits the number of people who can connect.
+            </p>
+
+            <p>
+                Want to try it? Send me the email address associated
+                with your Spotify account and I'll add you to the beta.
+            </p>
+
+            <a href="mailto:feriziibrahim824@gmail.com?subject=Recapped%20Beta%20Access" class="beta-email-button">
+                Request beta access
+                <span class="button-arrow" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="none">
+                    <path d="M4 10H16M11 5L16 10L11 15"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"/>
+                </svg>
+                </span>
+            </a>
+
+            <p class="privacy-note">
+                Your Spotify listening history is used to generate your
+                recap and is not stored by Recapped.
+            </p>
+        </div>
+    </div>
+
+    <div class="about-modal hidden" id="about-modal">
+        <div class="about-modal-backdrop" id="about-modal-close"></div>
+
+        <div class="about-modal-card">
+            <button class="modal-close" id="about-modal-x" aria-label="Close">
+                &times;
+            </button>
+
+            <div class="modal-label">ABOUT RECAPPED</div>
+
+            <h2>Your music, your story.</h2>
+
+            <p>
+                Recapped is an independent open-source project that turns
+                your Spotify listening data into personalized visual recaps.
+            </p>
+
+            <div class="about-section">
+                <h3>Privacy</h3>
+                <p>
+                    Recapped only requests the Spotify data needed to generate
+                    your recap. Your listening history isn't stored by Recapped.
+                </p>
+            </div>
+
+            <div class="about-section">
+                <h3>Independent project</h3>
+                <p>
+                    Recapped is not affiliated with, endorsed by, or sponsored
+                    by Spotify.
+                </p>
+            </div>
+
+            <div class="about-section">
+                <h3>Open source</h3>
+                <p>
+                    The source code is publicly available on GitHub.
+                    You can inspect how Recapped works for yourself.
+                </p>
+            </div>
+
+            <a href="https://github.com/ibrahimferizi/recapped" target="_blank" rel="noopener noreferrer" class="about-github-button">
+                View source on GitHub
+                <span class="button-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none">
+                        <path d="M5 15L15 5M7 5H15V13"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"/>
+                    </svg>
+                </span>
+            </a>
+        </div>
+    </div>
+
+    <footer class="hero-footer">
+        <div class="footer-main">
+            <span>Built independently</span>
+            <span class="footer-separator">&#x2022;</span>
+            <span>Powered by the Spotify Web API</span>
+        </div>
+
+        <div class="footer-links">
+            <button id="about-btn">About</button>
+            <span class="footer-separator">&#x2022;</span>
+            <a href="https://github.com/ibrahimferizi/recapped" target="_blank" rel="noopener noreferrer">
+                GitHub
+            </a>
+        </div>
+    </footer>
 </div>
 
 <div id="screen-main" class="hidden">
-    <h1>Recapped</h1>
-    <button id="btn-logout">Log out</button>
 
-    <div id="mode-buttons">
-        <button id="btn-alltime">All Time</button>
-        <button id="btn-yearly">This Year</button>
-    </div>
+    <header class="app-header">
+        <div class="app-brand">Recapped</div>
 
-    <div id="loading-section" class="hidden">
-        <p class="step" id="step-artists">Fetching your top artists...</p>
-        <p class="step" id="step-tracks">Fetching your top tracks...</p>
-        <p class="step" id="step-genre">Calculating your top genre...</p>
-        <p class="step" id="step-colors">Extracting colors...</p>
-        <p class="step" id="step-image">Generating your background...</p>
-        <p class="step" id="step-card">Building your card...</p>
-    </div>
+        <button id="btn-logout" class="logout-button">
+            Log out
+        </button>
+    </header>
 
-    <div id="skeleton-section" class="hidden">
-        <div class="skeleton-card"></div>
-        <div class="skeleton-card"></div>
-        <div class="skeleton-card"></div>
-    </div>
+    <main class="recap-main">
 
-    <div id="error-section" class="hidden">
-        <p id="error-message"></p>
-        <button id="btn-retry">Try Again</button>
-    </div>
+        <section id="recap-choice" class="recap-view">
 
-    <div id="results-section" class="hidden">
-        <div id="cards-container">
-            <div class="card-wrapper" id="card-0"><canvas class="result-canvas"></canvas></div>
-            <div class="card-wrapper" id="card-1"><canvas class="result-canvas"></canvas></div>
-            <div class="card-wrapper" id="card-2"><canvas class="result-canvas"></canvas></div>
-        </div>
-        <button id="btn-download" class="hidden">Download</button>
-    </div>
+            <div class="choice-content">
+                <span class="section-label">YOUR LISTENING</span>
+
+                <h1>Your story.</h1>
+
+                <p class="choice-description">
+                    Choose a listening period to create your visual recap.
+                </p>
+
+                <div class="period-actions">
+
+                    <button
+                            id="btn-alltime"
+                            class="period-action"
+                            data-period="alltime"
+                    >
+                        <span class="period-action-text">
+                            All Time
+                        </span>
+
+                        <span class="period-action-arrow" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none">
+                                <path
+                                        d="M4 10H16M11 5L16 10L11 15"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                />
+                            </svg>
+                        </span>
+                    </button>
+
+                    <button
+                            id="btn-yearly"
+                            class="period-action"
+                            data-period="yearly"
+                    >
+                        <span class="period-action-text">
+                            This Year
+                        </span>
+
+                        <span class="period-action-arrow" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none">
+                                <path
+                                        d="M4 10H16M11 5L16 10L11 15"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                />
+                            </svg>
+                        </span>
+                    </button>
+
+                </div>
+            </div>
+
+        </section>
+
+        <section id="recap-loading" class="recap-view hidden">
+
+            <div class="loading-content">
+
+                <span class="section-label">CREATING YOUR RECAP</span>
+
+                <h1>Putting it together.</h1>
+
+                <p class="loading-description">
+                    Your listening story is coming together.
+                </p>
+
+                <div id="loading-section" class="loading-steps">
+
+                    <div class="step" id="step-artists">
+                        <span class="step-indicator"></span>
+                        <span>Fetching your top artists</span>
+                    </div>
+
+                    <div class="step" id="step-tracks">
+                        <span class="step-indicator"></span>
+                        <span>Fetching your top tracks</span>
+                    </div>
+
+                    <div class="step" id="step-genre">
+                        <span class="step-indicator"></span>
+                        <span>Calculating your top genre</span>
+                    </div>
+
+                    <div class="step" id="step-colors">
+                        <span class="step-indicator"></span>
+                        <span>Extracting colors</span>
+                    </div>
+
+                    <div class="step" id="step-image">
+                        <span class="step-indicator"></span>
+                        <span>Generating your background</span>
+                    </div>
+
+                    <div class="step" id="step-card">
+                        <span class="step-indicator"></span>
+                        <span>Building your recap</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section id="recap-results" class="recap-view hidden">
+
+            <div id="results-section">
+
+                <div class="results-heading">
+
+                    <div>
+                        <span class="section-label">YOUR RECAP</span>
+
+                        <h1>Choose your story.</h1>
+
+                        <p>
+                            Select the version you want to keep.
+                        </p>
+                    </div>
+
+                    <span class="results-resolution">
+                        1080 &#xD7; 1920
+                    </span>
+
+                </div>
+
+
+                <div id="skeleton-section" class="hidden">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+
+
+                <div id="cards-container">
+
+                    <div
+                            class="card-wrapper"
+                            id="card-0"
+                            tabindex="0"
+                            role="button"
+                            aria-label="Select recap 1"
+                    >
+                        <canvas class="result-canvas"></canvas>
+                    </div>
+
+                    <div
+                            class="card-wrapper"
+                            id="card-1"
+                            tabindex="0"
+                            role="button"
+                            aria-label="Select recap 2"
+                    >
+                        <canvas class="result-canvas"></canvas>
+                    </div>
+
+                    <div
+                            class="card-wrapper"
+                            id="card-2"
+                            tabindex="0"
+                            role="button"
+                            aria-label="Select recap 3"
+                    >
+                        <canvas class="result-canvas"></canvas>
+                    </div>
+
+                </div>
+
+
+                <div class="results-actions">
+
+                    <div class="selection-message">
+                        <span id="selection-status">
+                            Select a recap to download it.
+                        </span>
+                    </div>
+
+                    <button
+                            id="btn-download"
+                            class="download-button hidden"
+                    >
+                        <span>Download recap</span>
+
+                        <span class="button-arrow" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none">
+                                <path
+                                        d="M4 10H16M11 5L16 10L11 15"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                />
+                            </svg>
+                        </span>
+                    </button>
+
+                </div>
+
+
+                <button
+                        id="btn-new-recap"
+                        class="new-recap-button"
+                >
+                    <span class="button-arrow" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="none">
+                            <path d="M16 10H4M9 5L4 10L9 15"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    Create another recap
+                </button>
+
+            </div>
+
+        </section>
+
+        <section id="recap-error" class="recap-view hidden">
+
+            <div id="error-section" class="error-content">
+
+                <span class="section-label">RECAP ERROR</span>
+
+                <div class="error-icon">!</div>
+
+                <h1>Something went wrong.</h1>
+
+                <p id="error-message">
+                    We couldn't create your recap.
+                </p>
+
+                <div class="error-actions">
+
+                    <button
+                            id="btn-retry"
+                            class="retry-button"
+                    >
+                        Try again
+                    </button>
+
+                    <button
+                            id="btn-error-back"
+                            class="error-back-button"
+                    >
+                        ← Choose another period
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
 </div>
 
 <script type="module" src="src/app.js"></script>

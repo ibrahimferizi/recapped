@@ -533,60 +533,36 @@ document
     });
 
 async function init() {
+    document.getElementById('oauth').addEventListener('click', connect);
 
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
 
-    const code =
-        params.get('code');
+        if (code) {
+            try {
+                await exchangeToken(code);
+            } catch (err) {
+                console.error('Login failed:', err);
+            }
 
-
-    if (code) {
-
-        try {
-
-            await exchangeToken(code);
-
-        } catch (err) {
-
-            console.error(
-                'Login failed:',
-                err
-            );
+            window.history.replaceState({}, document.title, '/');
         }
 
-        window.history.replaceState(
-            {},
-            document.title,
-            '/'
-        );
-    }
+        const loggedIn = await checkLoggedIn();
 
-
-    const loggedIn =
-        await checkLoggedIn();
-
-
-    if (loggedIn) {
-
-        void flushRecapCompletions();
-        hide('screen-connect');
-        show('screen-main');
-
-        showView(choiceView);
-
-    } else {
-
+        if (loggedIn) {
+            void flushRecapCompletions();
+            show('screen-main');
+            showView(choiceView);
+        } else {
+            show('screen-connect');
+        }
+    } catch (err) {
+        console.error('Session check failed:', err);
         show('screen-connect');
-
-        document
-            .getElementById('oauth')
-            .addEventListener(
-                'click',
-                connect
-            );
+    } finally {
+        hide('screen-auth-loading');
     }
 }
 

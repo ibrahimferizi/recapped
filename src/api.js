@@ -25,12 +25,29 @@ export async function getTopTracks(timeRange) {
     return fetchProxy('top-tracks', { time_range: timeRange });
 }
 
+const genreCache = new Map();
+const GENRE_CONCURRENCY = 5;
+
 export async function getArtistGenres(artistName) {
-    const response = await fetch(
-        `/api/genres?artist=${encodeURIComponent(artistName)}`
-    );
-    const data = await response.json();
-    return data.genres || [];
+    if (!genreCache.has(artistName)) {
+        const request = fetch(`/api/genres?artist=${encodeURIComponent(artistName)}`)
+            .then(async response => {
+                if (!response.ok) {
+                    throw new Error(`Genre lookup error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.genres || [];
+            })
+            .catch(error => {
+                genreCache.delete(artistName);
+                throw error;
+            });
+
+        genreCache.set(artistName, request);
+    }
+
+    return genreCache.get(artistName);
 }
 
 const GENRE_ALIASES = {
@@ -80,9 +97,12 @@ export async function getTopGenre(artists) {
     const top25 = artists.slice(0, 25);
     const genreResults = [];
 
-    for (const artist of top25) {
-        const genres = await getArtistGenres(artist.name);
-        genreResults.push(genres);
+    for (let i = 0; i < top25.length; i += GENRE_CONCURRENCY) {
+        const genres = await Promise.all(
+            top25.slice(i, i + GENRE_CONCURRENCY)
+                .map(artist => getArtistGenres(artist.name))
+        );
+        genreResults.push(...genres);
     }
 
     const genreCount = {};

@@ -14,6 +14,7 @@ import {
 } from './api.js';
 
 import { generateCard } from './canvas.js';
+import { recordRecapCompletion, flushRecapCompletions } from './recap-analytics.js';
 
 import { inject } from '@vercel/analytics';
 import { injectSpeedInsights } from '@vercel/speed-insights';
@@ -262,6 +263,7 @@ function getYearlyTimeRange() {
 
 async function startFlow(timeRange) {
 
+    const recapId = crypto.randomUUID();
     lastTimeRange = timeRange;
     selectedIndex = null;
     currentCanvases = [];
@@ -395,6 +397,7 @@ async function startFlow(timeRange) {
 
 
         showView(resultsView);
+        recordRecapCompletion(recapId);
 
     } catch (err) {
 
@@ -568,6 +571,7 @@ async function init() {
 
     if (loggedIn) {
 
+        void flushRecapCompletions();
         hide('screen-connect');
         show('screen-main');
 

@@ -77,11 +77,23 @@ export async function refreshAccessToken() {
     return data.access_token;
 }
 
-export async function checkLoggedIn() {
+export async function getSessionStatus() {
     const response = await fetch('/api/spotify-proxy?endpoint=me', {
         credentials: 'include',
     });
-    return response.ok;
+    const error = response.status === 403
+        ? await response.json().catch(() => ({}))
+        : null;
+
+    return {
+        loggedIn: response.ok,
+        status: response.status,
+        accessDenied: response.status === 403 && error?.error === 'Spotify API error',
+    };
+}
+
+export async function checkLoggedIn() {
+    return (await getSessionStatus()).loggedIn;
 }
 
 export async function logout() {

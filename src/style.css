@@ -176,6 +176,33 @@ body {
     text-underline-offset: 3px;
 }
 
+.auth-error {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 24px;
+    padding: 16px 18px;
+    border: 1px solid rgba(230, 183, 112, 0.2);
+    border-radius: 12px;
+    background: rgba(230, 183, 112, 0.05);
+    color: #d6c3a6;
+    font-size: 13px;
+    line-height: 1.55;
+    text-align: left;
+}
+
+.auth-beta-button {
+    margin-top: 12px;
+    padding: 10px 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: #FFFFFF;
+    font-family: inherit;
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
 .beta-modal {
     position: fixed;
     inset: 0;

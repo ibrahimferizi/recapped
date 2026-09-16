@@ -2,6 +2,7 @@ import {
     connect,
     exchangeToken,
     checkLoggedIn,
+    getSessionStatus,
     logout
 } from './auth.js';
 
@@ -532,35 +533,70 @@ document
         showView(choiceView);
     });
 
+function showLoginError(message, betaAccess = false) {
+    document.getElementById('auth-error-message').textContent = message;
+    document.getElementById('auth-beta-btn').classList.toggle('hidden', !betaAccess);
+    show('screen-connect');
+    show('auth-error');
+}
+
 async function init() {
-    document.getElementById('oauth').addEventListener('click', connect);
+    document.getElementById('oauth').addEventListener('click', async () => {
+        hide('auth-error');
+        try {
+            await connect();
+        } catch {
+            showLoginError('We couldn’t start the Spotify login. Please try again.');
+        }
+    });
 
     try {
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
+        const authError = params.get('error');
+
+        if (authError) {
+            window.history.replaceState({}, document.title, '/');
+            sessionStorage.removeItem('verifier');
+            showLoginError(
+                authError === 'access_denied'
+                    ? 'Spotify access wasn’t granted. If you cancelled, you can try again. If your account isn’t in the beta yet, request access below.'
+                    : 'Spotify couldn’t complete your login. Please try again.',
+                authError === 'access_denied'
+            );
+            return;
+        }
 
         if (code) {
             try {
                 await exchangeToken(code);
             } catch (err) {
                 console.error('Login failed:', err);
+                showLoginError('We couldn’t finish connecting to Spotify. Please try again.');
+                return;
+            } finally {
+                window.history.replaceState({}, document.title, '/');
             }
-
-            window.history.replaceState({}, document.title, '/');
         }
 
-        const loggedIn = await checkLoggedIn();
+        const { loggedIn, status, accessDenied } = await getSessionStatus();
 
         if (loggedIn) {
             void flushRecapCompletions();
             show('screen-main');
             showView(choiceView);
+        } else if (accessDenied) {
+            showLoginError('Spotify hasn’t allowed this account to access Recapped. Your account may not be on the beta list yet. Request access below.', true);
+        } else if (code || status !== 401) {
+            showLoginError(status === 429
+                ? 'Too many login checks right now. Please wait a minute and try again.'
+                : 'We couldn’t verify your Spotify connection. Please try again.');
         } else {
             show('screen-connect');
         }
     } catch (err) {
         console.error('Session check failed:', err);
-        show('screen-connect');
+        showLoginError('We couldn’t check your Spotify connection. Please check your internet connection and try again.');
     } finally {
         hide('screen-auth-loading');
     }
@@ -610,6 +646,8 @@ betaInfoBtn.addEventListener(
     'click',
     openBetaModal
 );
+
+document.getElementById('auth-beta-btn').addEventListener('click', openBetaModal);
 
 betaModalClose.addEventListener(
     'click',

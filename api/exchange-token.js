@@ -1,32 +1,21 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
-import { Redis } from '@upstash/redis';
 import crypto from 'crypto';
-
-const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
-
-const ALLOWED_ORIGINS = [
-    'https://recapped-music.vercel.app',
-    'http://127.0.0.1:3000',
-];
+import { redis, isProd, isAllowedOrigin, clientIp, isRateLimited } from '../lib/shared.js';
 
 const CLIENT_ID = process.env.VITE_CLIENT_ID;
 const REDIRECT_URI = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3000/';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
-const isProd = process.env.VERCEL_ENV === 'production';
 
 export default async function handler(req, res) {
-    const origin = req.headers['origin'] || req.headers['referer'] || '';
-    const allowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o));
-    if (!allowed) {
+    if (!isAllowedOrigin(req)) {
         return res.status(403).json({ error: 'Forbidden' });
     }
 
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    if (await isRateLimited(`rate:exchange:${clientIp(req)}`, 10, 60)) {
+        return res.status(429).json({ error: 'Too many requests, slow down' });
     }
 
     const { code, verifier } = req.body || {};
@@ -50,7 +39,8 @@ export default async function handler(req, res) {
 
         if (!response.ok) {
             const text = await response.text();
-            return res.status(500).json({ error: 'Token exchange failed', details: text });
+            console.error('token exchange failed:', response.status, text);
+            return res.status(500).json({ error: 'Token exchange failed' });
         }
 
         const data = await response.json();
@@ -70,6 +60,6 @@ export default async function handler(req, res) {
         res.status(200).json({ ok: true });
     } catch (err) {
         console.error('exchange-token error:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Internal error' });
     }
 }

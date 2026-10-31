@@ -1,32 +1,7 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
-import { Redis } from '@upstash/redis';
-
-const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
-
-const ALLOWED_ORIGINS = [
-    'https://recapped-music.vercel.app',
-    'http://127.0.0.1:3000',
-];
-
-const isProd = process.env.VERCEL_ENV === 'production';
-
-function parseCookies(cookieHeader = '') {
-    return Object.fromEntries(
-        cookieHeader.split(';').filter(Boolean).map(c => {
-            const [k, ...v] = c.trim().split('=');
-            return [k, decodeURIComponent(v.join('='))];
-        })
-    );
-}
+import { redis, isProd, isAllowedOrigin, getCookie } from '../lib/shared.js';
 
 export default async function handler(req, res) {
-    const origin = req.headers['origin'] || req.headers['referer'] || '';
-    const allowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o));
-    if (!allowed) {
+    if (!isAllowedOrigin(req)) {
         return res.status(403).json({ error: 'Forbidden' });
     }
 
@@ -34,8 +9,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const cookies = parseCookies(req.headers.cookie);
-    const sessionId = cookies.session_id;
+    const sessionId = getCookie(req, 'session_id');
 
     if (sessionId) {
         await redis.del(`session:${sessionId}`);

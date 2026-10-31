@@ -1,74 +1,110 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
-import { Redis } from '@upstash/redis';
+import { redis, isAllowedOrigin, clientIp, getCookie, isRateLimited } from '../lib/shared.js';
 
-const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
-
-const ALLOWED_ORIGINS = [
-    'https://recapped-music.vercel.app',
-    'http://127.0.0.1:3000',
-];
-
-const MAX_PROMPT_LENGTH = 1000;
 const RATE_LIMIT = 10;
 const WINDOW_SECONDS = 60;
+const HEX = /^[0-9a-f]{6}$/i;
+const MAX_GENRE_LENGTH = 50;
+
+const DEFAULT_GEOMETRY = 'modular composition, layered geometry, rhythmic patterns';
+
+const GENRE_GEOMETRY = {
+    'hip-hop': 'bold asymmetry, oversized blocks, layered frames, sharp angles',
+    'rap': 'bold asymmetry, oversized blocks, layered frames, sharp angles',
+    'pop': 'playful geometry, bright rhythm, rounded forms',
+    'indie': 'experimental layouts, collage-like structure, asymmetry',
+    'electronic': 'repeating patterns, digital architecture, geometric motion',
+    'rock': 'angular structures, diagonal tension, strong contrast',
+    'metal': 'dense geometry, dramatic contrast, heavy visual weight',
+    'classical': 'balanced symmetry, elegant structure, refined geometry',
+    'jazz': 'flowing curves, rhythmic repetition, expressive structure'
+};
+
+const VARIANTS = [
+    {
+        picks: [0, 1, 2],
+        structure: 'repeating modular forms, offset frames, geometric rhythm',
+        mood: 'dark dominant composition, strong contrast, concentrated highlights'
+    },
+    {
+        picks: [2, 3, 1],
+        structure: 'warped geometric ribbons, layered structures, dynamic movement',
+        mood: 'bright open composition, lighter overall appearance, airy negative space'
+    },
+    {
+        picks: [4, 1, 0],
+        structure: 'optical patterns, stacked blocks, structured visual hierarchy',
+        mood: 'bold color-driven composition, high energy, large color fields'
+    }
+];
+
+function buildPrompt(colors, genre, variantIndex) {
+    const palette = [...new Set(colors)];
+
+    while (palette.length < 5) {
+        palette.push(palette[palette.length - 1]);
+    }
+
+    const variant = VARIANTS[variantIndex];
+    const genreKey = genre.toLowerCase();
+    const geometry = Object.hasOwn(GENRE_GEOMETRY, genreKey) ? GENRE_GEOMETRY[genreKey] : DEFAULT_GEOMETRY;
+    const dominant = variant.picks.map(i => palette[i]).join(', ');
+
+    return `premium abstract visual identity artwork, vertical mobile poster, dominant palette ${dominant}, pure abstract geometric design, non-representational, ${geometry}, ${variant.structure}, ${variant.mood}, modular graphic system, stacked geometric layers, cropped oversized forms, framing devices, rhythmic composition, bold negative space, high contrast, clean focal area in upper center, visual complexity around edges, lower section suitable for statistics overlay, modern branding artwork, graphic poster design, contemporary visual identity, generative design system, 2d graphic design, minimal depth, no humans, no people, no portraits, no faces, no eyes, no bodies, no silhouettes, no clothing, no musicians, no performers, no photography, no album covers, no typography, no text, no logos, no icons`;
+}
 
 export default async function handler(req, res) {
-    const origin = req.headers['origin'] || req.headers['referer'] || '';
-    const allowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o));
-    if (!allowed) {
+    if (!isAllowedOrigin(req)) {
         return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const ip = req.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
-    const key = `rate:image:${ip}`;
-    const count = await redis.incr(key);
-    if (count === 1) await redis.expire(key, WINDOW_SECONDS);
-    if (count > RATE_LIMIT) {
+    if (await isRateLimited(`rate:image:${clientIp(req)}`, RATE_LIMIT, WINDOW_SECONDS)) {
         return res.status(429).json({ error: 'Too many requests, slow down' });
     }
 
-    const { prompt } = req.query;
+    const sessionId = getCookie(req, 'session_id');
 
-    if (!prompt || typeof prompt !== 'string') {
-        return res.status(400).json({ error: 'Missing prompt' });
+    if (!sessionId || !(await redis.exists(`session:${sessionId}`))) {
+        return res.status(401).json({ error: 'Not logged in' });
     }
 
-    if (prompt.trim().length === 0) {
-        return res.status(400).json({ error: 'Prompt is empty' });
+    const { colors, genre, variant } = req.query;
+
+    if (typeof colors !== 'string' || typeof genre !== 'string' || typeof variant !== 'string') {
+        return res.status(400).json({ error: 'Invalid request' });
     }
 
-    if (prompt.length > MAX_PROMPT_LENGTH) {
-        return res.status(400).json({ error: `Prompt too long (max ${MAX_PROMPT_LENGTH} chars)` });
+    const colorList = colors.split(',').map(c => c.trim().toLowerCase());
+
+    if (colorList.length < 1 || colorList.length > 5 || !colorList.every(c => HEX.test(c))) {
+        return res.status(400).json({ error: 'Invalid colors' });
     }
 
-    const sanitized = prompt.trim();
+    if (genre.length > MAX_GENRE_LENGTH) {
+        return res.status(400).json({ error: 'Invalid genre' });
+    }
 
-    console.log('prompt received:', sanitized.slice(0, 50));
-    console.log('key exists:', !!process.env.POLLINATIONS_KEY);
+    if (!/^\d$/.test(variant) || Number(variant) >= VARIANTS.length) {
+        return res.status(400).json({ error: 'Invalid variant' });
+    }
 
-    const url = `https://gen.pollinations.ai/image/${encodeURIComponent(sanitized)}?model=flux&width=1080&height=1920&nologo=true&key=${process.env.POLLINATIONS_KEY}`;
+    const prompt = buildPrompt(colorList, genre.trim(), Number(variant));
 
-    console.log('calling pollinations...');
+    const url = `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}?model=flux&width=1080&height=1920&nologo=true&key=${process.env.POLLINATIONS_KEY}`;
 
     try {
         const response = await fetch(url);
-        console.log('pollinations status:', response.status);
 
         if (!response.ok) {
             const text = await response.text();
-            console.log('pollinations error:', text);
-            return res.status(500).json({ error: 'Image generation failed', details: text });
+            console.error('pollinations error:', response.status, text);
+            return res.status(500).json({ error: 'Image generation failed' });
         }
 
         const buffer = await response.arrayBuffer();
         res.setHeader('Content-Type', 'image/jpeg');
         res.send(Buffer.from(buffer));
     } catch (err) {
-        console.error('fetch error:', err);
-        res.status(500).json({ error: err.message });
+        console.error('generate-image error:', err);
+        res.status(500).json({ error: 'Image generation failed' });
     }
 }

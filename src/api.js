@@ -93,6 +93,13 @@ function normalizeGenre(genre) {
     return GENRE_ALIASES[lower] || lower;
 }
 
+const GENRE_BLOCKLIST = new Set([
+    'seen live', 'female vocalists', 'female vocalist', 'male vocalists', 'male vocalist',
+    'american', 'british', 'canadian', 'australian', 'swedish', 'german', 'french', 'uk', 'usa',
+    'favorites', 'favourites', 'favorite', 'favourite', 'albums i own',
+    'beautiful', 'awesome', 'cool', 'love', 'legend', 'legends'
+]);
+
 export async function getTopGenre(artists) {
     const top25 = artists.slice(0, 25);
     const genreResults = [];
@@ -105,11 +112,14 @@ export async function getTopGenre(artists) {
         genreResults.push(...genres);
     }
 
-    const genreCount = {};
-    genreResults.flat().filter(genre => typeof genre === 'string').forEach(genre => {
-        const normalized = normalizeGenre(genre);
-        genreCount[normalized] = (genreCount[normalized] || 0) + 1;
-    });
+    const genreCount = Object.create(null);
+    genreResults.flat()
+        .filter(genre => typeof genre === 'string')
+        .map(normalizeGenre)
+        .filter(genre => genre && !GENRE_BLOCKLIST.has(genre) && !/^\d{2,4}s$/.test(genre))
+        .forEach(genre => {
+            genreCount[genre] = (genreCount[genre] || 0) + 1;
+        });
 
     const sorted = Object.entries(genreCount).sort((a, b) => b[1] - a[1]);
     return sorted[0]?.[0] || 'Unknown';
@@ -119,60 +129,38 @@ export async function extractColors(tracks) {
     const top5 = tracks.slice(0, 5);
 
     const colors = await Promise.all(
-        top5.map(track => {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.src = track.album.images[0].url;
-                img.onload = async () => {
+        top5.map(track => new Promise(resolve => {
+            const url = track.album?.images?.[0]?.url;
+
+            if (!url) {
+                resolve(null);
+                return;
+            }
+
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = async () => {
+                try {
                     const color = await getColor(img);
-                    const hex = '#' + color.array().map(x => x.toString(16).padStart(2, '0')).join('');
-                    resolve(hex);
-                };
-            });
-        })
+                    resolve('#' + color.array().map(x => x.toString(16).padStart(2, '0')).join(''));
+                } catch {
+                    resolve(null);
+                }
+            };
+            img.onerror = () => resolve(null);
+            img.src = url;
+        }))
     );
 
-    return colors;
+    const valid = colors.filter(Boolean);
+    return valid.length ? valid : ['#1db954'];
 }
 
-const GENRE_GEOMETRY = {
-    'hip-hop': 'bold asymmetry, oversized blocks, layered frames, sharp angles',
-    'rap': 'bold asymmetry, oversized blocks, layered frames, sharp angles',
-    'pop': 'playful geometry, bright rhythm, rounded forms',
-    'indie': 'experimental layouts, collage-like structure, asymmetry',
-    'electronic': 'repeating patterns, digital architecture, geometric motion',
-    'rock': 'angular structures, diagonal tension, strong contrast',
-    'metal': 'dense geometry, dramatic contrast, heavy visual weight',
-    'classical': 'balanced symmetry, elegant structure, refined geometry',
-    'jazz': 'flowing curves, rhythmic repetition, expressive structure'
-};
-
-const VARIANTS = [
-    { structure: 'repeating modular forms, offset frames, geometric rhythm', mood: 'dark dominant composition, strong contrast, concentrated highlights' },
-    { structure: 'warped geometric ribbons, layered structures, dynamic movement', mood: 'bright open composition, lighter overall appearance, airy negative space' },
-    { structure: 'optical patterns, stacked blocks, structured visual hierarchy', mood: 'bold color-driven composition, high energy, large color fields' }
-];
-
 export function generateImages(colors, genre) {
-    const uniqueColors = [...new Set(colors)];
-    const palette = [...uniqueColors].map(c => c.replace('#', ''));
+    const colorParam = colors.map(c => c.replace('#', '')).join(',');
+    const genreParam = encodeURIComponent(genre.slice(0, 50));
 
-    while (palette.length < 5) {
-        palette.push(palette[palette.length - 1]);
-    }
-
-    const geometry = GENRE_GEOMETRY[genre.toLowerCase()] || 'modular composition, layered geometry, rhythmic patterns';
-
-    const prompts = [
-        { colors: `${palette[0]}, ${palette[1]}, ${palette[2]}`, variant: VARIANTS[0] },
-        { colors: `${palette[2]}, ${palette[3]}, ${palette[1]}`, variant: VARIANTS[1] },
-        { colors: `${palette[4]}, ${palette[1]}, ${palette[0]}`, variant: VARIANTS[2] }
-    ];
-
-    return prompts.map(({ colors, variant }) => {
-        const prompt = `premium abstract visual identity artwork, vertical mobile poster, dominant palette ${colors}, pure abstract geometric design, non-representational, ${geometry}, ${variant.structure}, ${variant.mood}, modular graphic system, stacked geometric layers, cropped oversized forms, framing devices, rhythmic composition, bold negative space, high contrast, clean focal area in upper center, visual complexity around edges, lower section suitable for statistics overlay, modern branding artwork, graphic poster design, contemporary visual identity, generative design system, 2d graphic design, minimal depth, no humans, no people, no portraits, no faces, no eyes, no bodies, no silhouettes, no clothing, no musicians, no performers, no photography, no album covers, no typography, no text, no logos, no icons`;
-
-        return `/api/generate-image?prompt=${encodeURIComponent(prompt)}`;
-    });
+    return [0, 1, 2].map(variant =>
+        `/api/generate-image?colors=${colorParam}&genre=${genreParam}&variant=${variant}`
+    );
 }

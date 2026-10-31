@@ -1,6 +1,7 @@
 import {
     connect,
     exchangeToken,
+    consumeState,
     checkLoggedIn,
     getSessionStatus,
     logout
@@ -558,6 +559,7 @@ async function init() {
         if (authError) {
             window.history.replaceState({}, document.title, '/');
             sessionStorage.removeItem('verifier');
+            sessionStorage.removeItem('oauth_state');
             showLoginError(
                 authError === 'access_denied'
                     ? 'Spotify access wasn’t granted. If you cancelled, you can try again. If your account isn’t in the beta yet, request access below.'
@@ -568,6 +570,12 @@ async function init() {
         }
 
         if (code) {
+            if (!consumeState(params.get('state'))) {
+                window.history.replaceState({}, document.title, '/');
+                sessionStorage.removeItem('verifier');
+                showLoginError('We couldn’t verify the login attempt. Please try again.');
+                return;
+            }
             try {
                 await exchangeToken(code);
             } catch (err) {

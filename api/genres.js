@@ -1,33 +1,15 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
-import { Redis } from '@upstash/redis';
-
-const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
-
-const ALLOWED_ORIGINS = [
-    'https://recapped-music.vercel.app',
-    'http://127.0.0.1:3000',
-];
+import { isAllowedOrigin, clientIp, isRateLimited } from '../lib/shared.js';
 
 const MAX_ARTIST_LENGTH = 200;
 const RATE_LIMIT = 60;
 const WINDOW_SECONDS = 60;
 
 export default async function handler(req, res) {
-    const origin = req.headers['origin'] || req.headers['referer'] || '';
-    const allowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o));
-    if (!allowed) {
+    if (!isAllowedOrigin(req)) {
         return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const ip = req.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
-    const key = `rate:genres:${ip}`;
-    const count = await redis.incr(key);
-    if (count === 1) await redis.expire(key, WINDOW_SECONDS);
-    if (count > RATE_LIMIT) {
+    if (await isRateLimited(`rate:genres:${clientIp(req)}`, RATE_LIMIT, WINDOW_SECONDS)) {
         return res.status(429).json({ error: 'Too many requests, slow down' });
     }
 
@@ -59,6 +41,6 @@ export default async function handler(req, res) {
         res.status(200).json({ genres });
     } catch (err) {
         console.error('genres error:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Internal error' });
     }
 }

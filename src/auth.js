@@ -21,11 +21,19 @@ async function getChallenge(verifier) {
         .replace(/=/g, '');
 }
 
+function getState() {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+}
+
 export async function connect() {
     const verifier = getVerifier();
     const challenge = await getChallenge(verifier);
+    const state = getState();
 
     sessionStorage.setItem('verifier', verifier);
+    sessionStorage.setItem('oauth_state', state);
 
     const params = new URLSearchParams({
         client_id: CLIENT_ID,
@@ -34,9 +42,16 @@ export async function connect() {
         scope: SCOPE,
         code_challenge_method: 'S256',
         code_challenge: challenge,
+        state,
     });
 
     window.location = `https://accounts.spotify.com/authorize?${params}`;
+}
+
+export function consumeState(returned) {
+    const expected = sessionStorage.getItem('oauth_state');
+    sessionStorage.removeItem('oauth_state');
+    return Boolean(expected) && expected === returned;
 }
 
 export async function exchangeToken(code) {
@@ -54,27 +69,6 @@ export async function exchangeToken(code) {
     }
 
     sessionStorage.removeItem('verifier');
-}
-
-export async function refreshAccessToken() {
-    const sessionId = localStorage.getItem('session_id');
-    if (!sessionId) throw new Error('No session');
-
-    const response = await fetch('/api/refresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId }),
-    });
-
-    if (!response.ok) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('session_id');
-        throw new Error('Refresh failed, please reconnect');
-    }
-
-    const data = await response.json();
-    localStorage.setItem('access_token', data.access_token);
-    return data.access_token;
 }
 
 export async function getSessionStatus() {

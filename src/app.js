@@ -541,6 +541,16 @@ function showLoginError(message, betaAccess = false) {
     show('auth-error');
 }
 
+function showGreeting(user) {
+    const name = typeof user?.display_name === 'string'
+        ? user.display_name.trim().slice(0, 30)
+        : '';
+
+    document.getElementById('choice-label').textContent = name
+        ? `HELLO, ${name.toUpperCase()}!`
+        : 'YOUR LISTENING';
+}
+
 async function init() {
     document.getElementById('oauth').addEventListener('click', async () => {
         hide('auth-error');
@@ -587,14 +597,15 @@ async function init() {
             }
         }
 
-        const { loggedIn, status, accessDenied } = await getSessionStatus();
+        const { loggedIn, status, accessDenied, user } = await getSessionStatus();
 
         if (loggedIn) {
+            showGreeting(user);
             void flushRecapCompletions();
             show('screen-main');
             showView(choiceView);
         } else if (accessDenied) {
-            showLoginError('Spotify hasn’t allowed this account to access Recapped. Your account may not be on the beta list yet. Request access below.', true);
+            showLoginError('This Spotify account may not be on the beta list yet. Recapped runs in Spotify’s Development Mode, which limits who can connect. Tap “Request beta access” below to see how to get added.', true);
         } else if (code || status !== 401) {
             showLoginError(status === 429
                 ? 'Too many login checks right now. Please wait a minute and try again.'
@@ -670,9 +681,6 @@ betaModalX.addEventListener(
 const aboutModal =
     document.getElementById('about-modal');
 
-const aboutBtn =
-    document.getElementById('about-btn');
-
 const aboutModalClose =
     document.getElementById('about-modal-close');
 
@@ -688,11 +696,9 @@ function closeAboutModal() {
     aboutModal.classList.add('hidden');
 }
 
-
-aboutBtn.addEventListener(
-    'click',
-    openAboutModal
-);
+document.querySelectorAll('.about-trigger').forEach(button => {
+    button.addEventListener('click', openAboutModal);
+});
 
 aboutModalClose.addEventListener(
     'click',

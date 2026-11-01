@@ -157,63 +157,6 @@
         </div>
     </div>
 
-    <div class="about-modal hidden" id="about-modal">
-        <div class="about-modal-backdrop" id="about-modal-close"></div>
-
-        <div class="about-modal-card">
-            <button class="modal-close" id="about-modal-x" aria-label="Close">
-                &times;
-            </button>
-
-            <div class="modal-label">ABOUT RECAPPED</div>
-
-            <h2>Your music, your story.</h2>
-
-            <p>
-                Recapped is an independent open-source project that turns
-                your Spotify listening data into personalized visual recaps.
-            </p>
-
-            <div class="about-section">
-                <h3>Privacy</h3>
-                <p>
-                    Recapped only requests the Spotify data needed to generate
-                    your recap. Your listening history isn't stored by Recapped.
-                </p>
-            </div>
-
-            <div class="about-section">
-                <h3>Independent project</h3>
-                <p>
-                    Recapped is not affiliated with, endorsed by, or sponsored
-                    by Spotify.
-                </p>
-            </div>
-
-            <div class="about-section">
-                <h3>Open source</h3>
-                <p>
-                    The source code is publicly available on GitHub.
-                    You can inspect how Recapped works for yourself.
-                </p>
-            </div>
-
-            <a href="https://github.com/ibrahimferizi/recapped" target="_blank" rel="noopener noreferrer"
-               class="about-github-button">
-                View source on GitHub
-                <span class="button-arrow" aria-hidden="true">
-                    <svg viewBox="0 0 20 20" fill="none">
-                        <path d="M5 15L15 5M7 5H15V13"
-                              stroke="currentColor"
-                              stroke-width="1.8"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"/>
-                    </svg>
-                </span>
-            </a>
-        </div>
-    </div>
-
     <footer class="hero-footer">
         <div class="footer-main">
             <span>Built independently</span>
@@ -222,7 +165,9 @@
         </div>
 
         <div class="footer-links">
-            <button id="about-btn">About</button>
+            <button type="button" class="about-trigger">About</button>
+            <span class="footer-separator">&#x2022;</span>
+            <a href="/privacy.html" target="_blank" rel="noopener noreferrer">Privacy</a>
             <span class="footer-separator">&#x2022;</span>
             <a href="https://github.com/ibrahimferizi/recapped" target="_blank" rel="noopener noreferrer">
                 GitHub
@@ -246,7 +191,7 @@
         <section id="recap-choice" class="recap-view">
 
             <div class="choice-content">
-                <span class="section-label">YOUR LISTENING</span>
+                <span id="choice-label" class="section-label">YOUR LISTENING</span>
 
                 <h1>Your story.</h1>
 
@@ -518,6 +463,79 @@
 
     </main>
 
+    <footer class="hero-footer app-footer">
+        <div class="footer-main">
+            <span>Built independently</span>
+            <span class="footer-separator">&#x2022;</span>
+            <span>Powered by the Spotify Web API</span>
+        </div>
+
+        <div class="footer-links">
+            <button type="button" class="about-trigger">About</button>
+            <span class="footer-separator">&#x2022;</span>
+            <a href="/privacy.html" target="_blank" rel="noopener noreferrer">Privacy</a>
+            <span class="footer-separator">&#x2022;</span>
+            <a href="https://github.com/ibrahimferizi/recapped" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
+    </footer>
+
+</div>
+
+<div class="about-modal hidden" id="about-modal">
+    <div class="about-modal-backdrop" id="about-modal-close"></div>
+
+    <div class="about-modal-card">
+        <button class="modal-close" id="about-modal-x" aria-label="Close">
+            &times;
+        </button>
+
+        <div class="modal-label">ABOUT RECAPPED</div>
+
+        <h2>Your music, your story.</h2>
+
+        <p>
+            Recapped is an independent open-source project that turns
+            your Spotify listening data into personalized visual recaps.
+        </p>
+
+        <div class="about-section">
+            <h3>Privacy</h3>
+            <p>
+                Recapped only requests the Spotify data needed to generate
+                your recap. Your listening history isn't stored by Recapped.
+            </p>
+        </div>
+
+        <div class="about-section">
+            <h3>Independent project</h3>
+            <p>
+                Recapped is not affiliated with, endorsed by, or sponsored
+                by Spotify.
+            </p>
+        </div>
+
+        <div class="about-section">
+            <h3>Open source</h3>
+            <p>
+                The source code is publicly available on GitHub.
+                You can inspect how Recapped works for yourself.
+            </p>
+        </div>
+
+        <a href="https://github.com/ibrahimferizi/recapped" target="_blank" rel="noopener noreferrer"
+           class="about-github-button">
+            View source on GitHub
+            <span class="button-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none">
+                        <path d="M5 15L15 5M7 5H15V13"
+                              stroke="currentColor"
+                              stroke-width="1.8"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"/>
+                    </svg>
+                </span>
+        </a>
+    </div>
 </div>
 
 <script type="module" src="src/app.js"></script>

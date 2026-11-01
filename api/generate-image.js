@@ -89,10 +89,12 @@ export default async function handler(req, res) {
 
     const prompt = buildPrompt(colorList, genre.trim(), Number(variant));
 
-    const url = `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}?model=flux&width=1080&height=1920&nologo=true&key=${process.env.POLLINATIONS_KEY}`;
+    const url = `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}?model=flux&width=1080&height=1920&nologo=true`;
 
     try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            headers: { Authorization: `Bearer ${process.env.POLLINATIONS_KEY}` }
+        });
 
         if (!response.ok) {
             const text = await response.text();

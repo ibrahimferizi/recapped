@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy · Recapped</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        body {
+            background: #0d0d0d;
+            color: #b8b8b8;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.7;
+            padding: 48px 24px 72px;
+        }
+
+        main {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 36px;
+            font-size: 13px;
+        }
+
+        h1 {
+            color: #ffffff;
+            font-size: 36px;
+            letter-spacing: -0.03em;
+            margin-bottom: 6px;
+        }
+
+        h2 {
+            color: #ffffff;
+            font-size: 18px;
+            margin: 36px 0 10px;
+        }
+
+        p {
+            margin-bottom: 12px;
+        }
+
+        ul {
+            margin: 0 0 12px 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        a {
+            color: #1ed760;
+        }
+
+        .updated {
+            color: #777777;
+            font-size: 13px;
+            margin-bottom: 28px;
+        }
+
+        code {
+            color: #dddddd;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <a class="back" href="/">&larr; Back to Recapped</a>
+
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: November 1, 2026</p>
+
+    <p>
+        Recapped is an independent personal project by Ibrahim Ferizi. It is not
+        affiliated with, endorsed by, or sponsored by Spotify. This page explains
+        what happens to your data when you use recapped-music.vercel.app.
+    </p>
+
+    <h2>1. What Recapped does with your Spotify account</h2>
+    <p>
+        You log in on Spotify's own page, so Recapped never sees your Spotify
+        password. Recapped asks for one permission, <code>user-top-read</code>,
+        which lets it read your top artists and top tracks. It does not request
+        your email address, playlists, or playback, and it cannot change anything
+        in your account.
+    </p>
+    <p>
+        When you create a recap, Recapped fetches your top artists and tracks for
+        the period you chose, builds the card in your browser, and uses your
+        Spotify display name to greet you. Your listening data is not saved on my
+        servers. The finished card exists on your device unless you download or
+        share it.
+    </p>
+
+    <h2>2. What is stored</h2>
+    <ul>
+        <li>
+            <strong>Login session.</strong> Your Spotify access and refresh tokens
+            and their expiry, saved under a random session ID in a Redis database
+            hosted by Upstash. They are deleted when you log out or after 30 days.
+            The tokens stay on the server and are never sent to your browser.
+        </li>
+        <li>
+            <strong>Session cookie.</strong> One essential cookie, <code>session_id</code>,
+            holds that random ID. It is not readable by scripts on the page and
+            expires after 30 days.
+        </li>
+        <li>
+            <strong>Anonymous usage counts.</strong> When a recap finishes, a random
+            recap ID, not linked to your account, is kept for up to 7 days so the
+            same recap is not counted twice, and a daily total is increased by one.
+        </li>
+        <li>
+            <strong>Short-lived rate limits.</strong> To prevent abuse, counters are
+            kept for about a minute, keyed by your IP address or session ID.
+        </li>
+        <li>
+            <strong>In your browser.</strong> Temporary data in session storage
+            while you log in and while a recap finishes. It is cleared when you
+            close the tab.
+        </li>
+    </ul>
+
+    <h2>3. Services that receive data</h2>
+    <ul>
+        <li>
+            <strong>Spotify</strong> handles login and provides your top artists and
+            tracks. Album covers and an artist photo load directly from Spotify's
+            image servers into your browser, like any image on a website.
+        </li>
+        <li>
+            <strong>Vercel</strong> hosts Recapped. Like any host, it keeps standard
+            request logs, which can include IP addresses. Recapped also uses Vercel
+            Web Analytics and Speed Insights to measure overall visits and page
+            speed; see Vercel's documentation for exactly what they collect.
+        </li>
+        <li>
+            <strong>Upstash</strong> stores the session and counter data described above.
+        </li>
+        <li>
+            <strong>Last.fm</strong> receives the names of your top artists from my
+            server, so genre tags can be looked up. It does not receive your name
+            or account details.
+        </li>
+        <li>
+            <strong>Pollinations</strong> generates the background artwork. My server
+            sends it a text prompt containing up to five color codes taken from your
+            album art and your most common genre. It does not receive your name or
+            account details.
+        </li>
+    </ul>
+
+    <h2>4. Example recaps on the home page</h2>
+    <p>
+        The recaps shown in the "From the community" section were shared by the
+        people who made them, with their permission. If you appear there and want
+        yours removed, email me and I will take it down.
+    </p>
+
+    <h2>5. Your choices</h2>
+    <ul>
+        <li>
+            <strong>Log out</strong> in the app to delete your session from the
+            database and remove the cookie.
+        </li>
+        <li>
+            <strong>Revoke access</strong> at any time from the Apps section of your
+            <a href="https://www.spotify.com/account/apps/" target="_blank" rel="noopener noreferrer">Spotify account
+                page</a>.
+        </li>
+        <li>
+            <strong>Ask me</strong> by email about anything tied to you. Because
+            sessions are not linked to a name or email, logging out and revoking
+            access removes everything Recapped holds about you.
+        </li>
+    </ul>
+
+    <h2>6. Security</h2>
+    <p>
+        Recapped is served over HTTPS, your Spotify tokens are kept only on the
+        server, and requests to the server are checked and rate limited.
+        Recapped keeps the amount of data it holds small.
+    </p>
+
+    <h2>7. Changes</h2>
+    <p>
+        If this policy changes, the date at the top will change with it.
+    </p>
+
+    <h2>8. Contact</h2>
+    <p>
+        Questions or requests:
+        <a href="mailto:feriziibrahim824@gmail.com">feriziibrahim824@gmail.com</a>.
+    </p>
+</main>
+</body>
+</html>

@@ -75,14 +75,15 @@ export async function getSessionStatus() {
     const response = await fetch('/api/spotify-proxy?endpoint=me', {
         credentials: 'include',
     });
-    const error = response.status === 403
+    const body = response.ok || response.status === 403
         ? await response.json().catch(() => ({}))
         : null;
 
     return {
         loggedIn: response.ok,
         status: response.status,
-        accessDenied: response.status === 403 && error?.error === 'Spotify API error',
+        accessDenied: response.status === 403 && body?.error === 'Spotify API error',
+        user: response.ok ? body : null,
     };
 }
 

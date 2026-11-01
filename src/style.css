@@ -835,7 +835,7 @@ body {
 }
 
 #recap-choice {
-    min-height: calc(100vh - 172px);
+    min-height: calc(100vh - 244px);
 
     display: flex;
     align-items: center;
@@ -1498,7 +1498,7 @@ body {
     #recap-choice,
     #recap-loading,
     #recap-error {
-        min-height: calc(100svh - 138px);
+        min-height: calc(100svh - 220px);
     }
 
     .choice-content {
@@ -1634,4 +1634,18 @@ button:hover {
 button:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+.app-footer {
+    width: auto;
+    max-width: none;
+    margin: auto 40px 18px;
+    padding: 20px 0;
+}
+
+@media (max-width: 800px) {
+    .app-footer {
+        margin: auto 20px 22px;
+        padding: 18px 0 8px;
+    }
 }
